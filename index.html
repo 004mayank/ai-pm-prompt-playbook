@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AI PM Workbench</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <div class="app" id="app">
+    <aside class="sidebar">
+      <header class="brand">
+        <div class="brand__title">AI PM Workbench</div>
+        <div class="brand__subtitle">Local-first prompt runner</div>
+      </header>
+
+      <section class="card">
+        <div class="card__title">API Key</div>
+        <div class="field">
+          <label for="apiKey">OpenAI API Key</label>
+          <input id="apiKey" type="password" placeholder="sk-..." autocomplete="off" spellcheck="false" />
+          <div class="hint">Stored in <code>localStorage</code> on this device.</div>
+        </div>
+        <div class="row">
+          <button class="btn" id="saveKeyBtn">Save</button>
+          <button class="btn btn--ghost" id="clearKeyBtn">Clear</button>
+        </div>
+        <div class="row">
+          <button class="btn btn--secondary" id="testKeyBtn">Test connection</button>
+          <div class="status" id="keyStatus" aria-live="polite">Not tested</div>
+        </div>
+        <div class="warning">
+          <strong>Security note:</strong> this is a local-only app. Don’t use on shared computers.
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__title">Playbook</div>
+        <div class="field">
+          <label for="playbook">Select playbook</label>
+          <select id="playbook">
+            <option value="prd">PRD Generator</option>
+            <option value="funnel">Funnel Drop Analysis</option>
+            <option value="kpi">KPI Diagnosis</option>
+            <option value="exec">Exec Update</option>
+            <option value="research">Research Synthesis</option>
+          </select>
+        </div>
+        <div class="field">
+          <label for="temperature">Temperature <span class="mono" id="tempLabel">0.3</span></label>
+          <input id="temperature" type="range" min="0" max="1" step="0.1" value="0.3" />
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card__title">History</div>
+        <div class="history" id="historyList">
+          <div class="muted">No runs yet.</div>
+        </div>
+        <div class="row">
+          <button class="btn btn--ghost" id="clearHistoryBtn">Clear history</button>
+        </div>
+      </section>
+
+      <footer class="sidebar__footer">
+        <button class="btn btn--primary" id="runBtn">Run playbook</button>
+        <div class="muted small" id="runMeta"></div>
+      </footer>
+    </aside>
+
+    <main class="main">
+      <section class="grid">
+        <div class="panel">
+          <div class="panel__header">
+            <h2>Data connector</h2>
+            <div class="muted">CSV upload or paste raw text</div>
+          </div>
+
+          <div class="tabs">
+            <button class="tab tab--active" data-tab="csv">CSV</button>
+            <button class="tab" data-tab="text">Raw text</button>
+          </div>
+
+          <div class="tabpane" id="tab-csv">
+            <div class="row">
+              <input id="csvFile" type="file" accept=".csv,text/csv" />
+              <button class="btn btn--ghost" id="clearDataBtn">Clear data</button>
+            </div>
+            <div class="preview" id="csvPreview">
+              <div class="muted">Upload a CSV to see a preview (first 5 rows).</div>
+            </div>
+          </div>
+
+          <div class="tabpane hidden" id="tab-text">
+            <div class="field">
+              <label for="rawText">Paste raw text (notes, interview transcript, KPI dump)</label>
+              <textarea id="rawText" rows="8" placeholder="Paste here..."></textarea>
+              <div class="row">
+                <button class="btn btn--secondary" id="useTextBtn">Use this as input</button>
+                <div class="muted small" id="textStatus">No text loaded.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__header">
+            <h2>Prompt builder</h2>
+            <div class="muted">Generated from playbook + your inputs</div>
+          </div>
+
+          <details class="collapsible" open>
+            <summary>Structured preview</summary>
+            <pre class="code" id="promptPreview"></pre>
+          </details>
+
+          <details class="collapsible" open>
+            <summary>Final prompt (editable)</summary>
+            <div class="field">
+              <textarea id="promptEditor" rows="14" spellcheck="false"></textarea>
+              <div class="row">
+                <button class="btn btn--ghost" id="resetPromptBtn">Reset to template</button>
+                <button class="btn btn--ghost" id="copyPromptBtn">Copy prompt</button>
+                <div class="muted small" id="promptStats"></div>
+              </div>
+            </div>
+          </details>
+        </div>
+
+        <div class="panel">
+          <div class="panel__header">
+            <h2>Output</h2>
+            <div class="muted">Formatted response + raw toggle</div>
+          </div>
+
+          <div class="row">
+            <button class="btn btn--ghost" id="copyOutputBtn" disabled>Copy</button>
+            <button class="btn btn--ghost" id="toggleRawBtn" disabled>Show raw</button>
+            <div class="muted small" id="outputMeta"></div>
+          </div>
+
+          <div class="output" id="outputBox">
+            <div class="muted">Run a playbook to see output here.</div>
+          </div>
+        </div>
+
+        <div class="panel">
+          <div class="panel__header">
+            <h2>Evaluation</h2>
+            <div class="muted">Secondary run scores output quality</div>
+          </div>
+
+          <div class="eval" id="evalBox">
+            <div class="muted">Evaluation will appear after a run.</div>
+          </div>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite"></div>
+
+  <script src="script.js"></script>
+</body>
+</html>
