@@ -329,6 +329,12 @@ code, .mono { font-family: var(--mono); }
   border-radius: 12px;
   padding: 12px;
 }
+.subcard__title {
+  font-weight: 750;
+  letter-spacing: 0.2px;
+  margin-bottom: 10px;
+  color: rgba(230,237,247,0.92);
+}
 
 @media (max-width: 980px) {
   .app { grid-template-columns: 1fr; }

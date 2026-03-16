@@ -206,13 +206,18 @@
     prd: {
       name: 'PRD Generator',
       inputs: [
-        { key: 'productName', label: 'Product Name', type: 'text', placeholder: 'e.g., Acme Wallet', help: 'Name of the product or feature area.' },
-        { key: 'productDescription', label: 'Product Description', type: 'textarea', rows: 3, placeholder: '1–2 sentences...', help: 'What is it and where does it sit in the ecosystem?' },
-        { key: 'targetAudience', label: 'Target Audience', type: 'textarea', rows: 3, placeholder: 'Who is this for?', help: 'Primary segments + any constraints (geo, platform, tier).' },
-        { key: 'userProblem', label: 'User Problem', type: 'textarea', rows: 4, placeholder: 'What problem are we solving?', help: 'Be specific: pain, frequency, and current workaround.' },
-        { key: 'keyFeatures', label: 'Key Features', type: 'textarea', rows: 5, placeholder: 'Bullets are fine...', help: 'What will we build in MVP?' },
-        { key: 'successMetrics', label: 'Success Metrics', type: 'text', placeholder: 'e.g., Activation rate, D7 retention', help: 'Primary metric + guardrails if you have them.' },
-        { key: 'constraints', label: 'Constraints / Assumptions', type: 'textarea', rows: 4, placeholder: 'Timeline, team size, dependencies...', help: 'Call out limitations and what must be true.' }
+        { key: 'productName', label: 'Product Name', type: 'text', group: 'Product', placeholder: 'e.g., Acme Wallet', help: 'Name of the product or feature area.' },
+        { key: 'productDescription', label: 'Product Description', type: 'textarea', group: 'Product', rows: 3, placeholder: '1–2 sentences...', help: 'What is it and where does it sit in the ecosystem?' },
+
+        { key: 'targetAudience', label: 'Target Audience', type: 'textarea', group: 'Users', rows: 3, placeholder: 'Who is this for?', help: 'Primary segments + any constraints (geo, platform, tier).' },
+
+        { key: 'userProblem', label: 'User Problem', type: 'textarea', group: 'Problem', rows: 4, placeholder: 'What problem are we solving?', help: 'Be specific: pain, frequency, and current workaround.' },
+
+        { key: 'keyFeatures', label: 'Key Features', type: 'textarea', group: 'Solution', rows: 5, placeholder: 'Bullets are fine...', help: 'What will we build in MVP?' },
+
+        { key: 'successMetrics', label: 'Success Metrics', type: 'text', group: 'Success', placeholder: 'e.g., Activation rate, D7 retention', help: 'Primary metric + guardrails if you have them.' },
+
+        { key: 'constraints', label: 'Constraints / Assumptions', type: 'textarea', group: 'Constraints', rows: 4, placeholder: 'Timeline, team size, dependencies...', help: 'Call out limitations and what must be true.' }
       ],
       goal: 'Draft an execution-ready PRD v1.',
       outputFormat: [
@@ -244,11 +249,13 @@
     funnel: {
       name: 'Funnel Drop Analysis',
       inputs: [
-        { key: 'csvUpload', label: 'Upload CSV', type: 'csv', help: 'Upload a funnel export (events or aggregated funnel table). Preview shows first 5 rows.' },
-        { key: 'stageNames', label: 'Funnel Stage Names', type: 'textarea', rows: 4, placeholder: 'Stage1\nStage2\nStage3', help: 'List stages in order (one per line).' },
-        { key: 'dropoffStage', label: 'Drop-off stage to analyze', type: 'text', placeholder: 'e.g., Checkout → Payment', help: 'The step where drop-off increased.' },
-        { key: 'hypothesis', label: 'Hypothesis', type: 'textarea', rows: 3, placeholder: 'My guess is...', help: 'Optional: your current hypothesis to test.' },
-        { key: 'notes', label: 'Notes', type: 'textarea', rows: 4, placeholder: 'Recent launches, incidents, seasonality...', help: 'Anything that might explain the change.' }
+        { key: 'csvUpload', label: 'Upload CSV', type: 'csv', group: 'Data', help: 'Upload a funnel export (events or aggregated funnel table). Preview shows first 5 rows.' },
+
+        { key: 'stageNames', label: 'Funnel Stage Names', type: 'textarea', group: 'Funnel', rows: 4, placeholder: 'Stage1\nStage2\nStage3', help: 'List stages in order (one per line).' },
+        { key: 'dropoffStage', label: 'Drop-off stage to analyze', type: 'text', group: 'Funnel', placeholder: 'e.g., Checkout → Payment', help: 'The step where drop-off increased.' },
+
+        { key: 'hypothesis', label: 'Hypothesis', type: 'textarea', group: 'Analysis', rows: 3, placeholder: 'My guess is...', help: 'Optional: your current hypothesis to test.' },
+        { key: 'notes', label: 'Notes', type: 'textarea', group: 'Analysis', rows: 4, placeholder: 'Recent launches, incidents, seasonality...', help: 'Anything that might explain the change.' }
       ],
       goal: 'Diagnose why a funnel step dropped and propose next actions.',
       outputFormat: [
@@ -331,12 +338,13 @@
     research: {
       name: 'Research Synthesis',
       inputs: [
-        { key: 'csvUpload', label: 'Upload CSV', type: 'csv', help: 'Optional: upload a research export (responses, tags, or notes). Preview shows first 5 rows.' },
-        { key: 'rawNotes', label: 'Raw Research Notes', type: 'textarea', rows: 6, placeholder: 'Paste notes, transcripts, or summaries...', help: 'If you do not have CSV, paste notes here.' },
-        { key: 'themes', label: 'Key Themes', type: 'textarea', rows: 3, placeholder: 'Theme 1\nTheme 2', help: 'Optional: themes you already see.' },
-        { key: 'insights', label: 'Key Insights', type: 'textarea', rows: 3, placeholder: 'Insight 1\nInsight 2', help: 'Optional: hypotheses or early takeaways.' },
-        { key: 'quotes', label: 'User Quotes', type: 'textarea', rows: 4, placeholder: '"Quote" — user type', help: 'Optional: paste notable quotes.' },
-        { key: 'opportunities', label: 'Opportunities', type: 'textarea', rows: 4, placeholder: 'Opportunity areas...', help: 'Optional: solution directions to evaluate.' }
+        { key: 'csvUpload', label: 'Upload CSV', type: 'csv', group: 'Data', help: 'Optional: upload a research export (responses, tags, or notes). Preview shows first 5 rows.' },
+        { key: 'rawNotes', label: 'Raw Research Notes', type: 'textarea', group: 'Data', rows: 6, placeholder: 'Paste notes, transcripts, or summaries...', help: 'If you do not have CSV, paste notes here.' },
+
+        { key: 'themes', label: 'Key Themes', type: 'textarea', group: 'Synthesis', rows: 3, placeholder: 'Theme 1\nTheme 2', help: 'Optional: themes you already see.' },
+        { key: 'insights', label: 'Key Insights', type: 'textarea', group: 'Synthesis', rows: 3, placeholder: 'Insight 1\nInsight 2', help: 'Optional: hypotheses or early takeaways.' },
+        { key: 'quotes', label: 'User Quotes', type: 'textarea', group: 'Evidence', rows: 4, placeholder: '"Quote" — user type', help: 'Optional: paste notable quotes.' },
+        { key: 'opportunities', label: 'Opportunities', type: 'textarea', group: 'Opportunities', rows: 4, placeholder: 'Opportunity areas...', help: 'Optional: solution directions to evaluate.' }
       ],
       goal: 'Synthesize notes into insights and recommended actions.',
       outputFormat: [
@@ -718,115 +726,144 @@
     if (!pb) return;
 
     centerTitleEl.textContent = pb.name;
-    centerSubtitleEl.textContent = 'Inputs for the selected playbook. Switching playbooks updates this panel.';
+    centerSubtitleEl.textContent = 'Fill the sections below. Switching playbooks updates this panel instantly.';
 
     const st = getPlaybookState(playbookKey);
-
     playbookInputsEl.innerHTML = '';
 
-    const wrap = document.createElement('div');
-    wrap.className = 'subcard';
-
-    const frag = document.createDocumentFragment();
-
-    (pb.inputs || []).forEach((f) => {
-      const field = document.createElement('div');
-      field.className = 'field';
-
-      const id = `pb-${playbookKey}-${f.key}`;
-
-      if (f.type === 'csv') {
-        field.innerHTML = `
-          <label for="${id}">${escapeHtml(f.label)}</label>
-          <div class="row">
-            <input id="${id}" type="file" accept=".csv,text/csv" />
-            <button class="btn btn--ghost" type="button" data-clear="${f.key}">Clear</button>
-          </div>
-          ${fieldHelpHtml(f.help)}
-          <div class="preview" data-preview="${f.key}">
-            <div class="muted">Upload a CSV to see a preview (first 5 rows).</div>
-          </div>
-        `;
-        frag.appendChild(field);
-        return;
+    // Group fields for a more structured feel
+    const inputs = pb.inputs || [];
+    const groups = [];
+    const byGroup = new Map();
+    for (const f of inputs) {
+      const g = f.group || 'Inputs';
+      if (!byGroup.has(g)) {
+        byGroup.set(g, []);
+        groups.push(g);
       }
+      byGroup.get(g).push(f);
+    }
 
-      if (f.type === 'textarea') {
-        const rows = f.rows || 4;
-        field.innerHTML = `
-          <label for="${id}">${escapeHtml(f.label)}</label>
-          <textarea id="${id}" rows="${rows}" placeholder="${escapeHtml(f.placeholder || '')}"></textarea>
-          ${fieldHelpHtml(f.help)}
-        `;
-        frag.appendChild(field);
-        return;
-      }
+    for (const g of groups) {
+      const card = document.createElement('div');
+      card.className = 'subcard';
 
-      // default: text
-      field.innerHTML = `
-        <label for="${id}">${escapeHtml(f.label)}</label>
-        <input id="${id}" type="text" placeholder="${escapeHtml(f.placeholder || '')}" />
-        ${fieldHelpHtml(f.help)}
-      `;
-      frag.appendChild(field);
-    });
+      const title = document.createElement('div');
+      title.className = 'subcard__title';
+      title.textContent = g;
+      card.appendChild(title);
 
-    wrap.appendChild(frag);
-    playbookInputsEl.appendChild(wrap);
+      for (const f of byGroup.get(g)) {
+        const field = document.createElement('div');
+        field.className = 'field';
 
-    // Hydrate values + attach listeners
-    (pb.inputs || []).forEach((f) => {
-      const id = `pb-${playbookKey}-${f.key}`;
-      const el = document.getElementById(id);
-      if (!el) return;
+        const id = `pb-${playbookKey}-${f.key}`;
+        const existing = st[f.key];
 
-      const existing = st[f.key];
+        if (f.type === 'csv') {
+          field.innerHTML = `
+            <label for="${id}">${escapeHtml(f.label)}</label>
+            <div class="row">
+              <input id="${id}" type="file" accept=".csv,text/csv" />
+              <button class="btn btn--ghost" type="button" data-clear="${playbookKey}:${f.key}">Clear</button>
+            </div>
+            ${fieldHelpHtml(f.help)}
+            <div class="preview" data-preview="${playbookKey}:${f.key}">
+              <div class="muted">Upload a CSV to see a preview (first 5 rows).</div>
+            </div>
+          `;
 
-      if (f.type === 'csv') {
-        const preview = playbookInputsEl.querySelector(`[data-preview="${f.key}"]`);
-        if (existing && typeof existing === 'object' && existing.headers && existing.rows) {
-          renderCSVPreview(existing.headers, existing.rows, preview);
+          card.appendChild(field);
+
+          const fileEl = () => document.getElementById(id);
+          const previewEl = () => playbookInputsEl.querySelector(`[data-preview="${playbookKey}:${f.key}"]`);
+
+          // hydrate preview
+          if (existing && typeof existing === 'object' && existing.headers && existing.rows) {
+            renderCSVPreview(existing.headers, existing.rows, previewEl());
+          }
+
+          // listeners
+          queueMicrotask(() => {
+            const el = fileEl();
+            if (!el) return;
+
+            el.addEventListener('change', async () => {
+              const file = el.files?.[0];
+              if (!file) return;
+              const text = await file.text();
+              const parsed = parseCSV(text);
+              const csvText = `CSV Preview (up to 30 rows)\n\n${csvToText(parsed.headers, parsed.rows, 30)}`;
+              setPlaybookField(playbookKey, f.key, {
+                fileName: file.name,
+                headers: parsed.headers,
+                rows: parsed.rows,
+                text: csvText
+              });
+              renderCSVPreview(parsed.headers, parsed.rows, previewEl());
+              toast('CSV loaded');
+              rebuildPrompt({ keepEditor: true });
+            });
+
+            const clearBtn = playbookInputsEl.querySelector(`button[data-clear="${playbookKey}:${f.key}"]`);
+            if (clearBtn) {
+              clearBtn.addEventListener('click', () => {
+                el.value = '';
+                setPlaybookField(playbookKey, f.key, null);
+                const p = previewEl();
+                if (p) p.innerHTML = `<div class="muted" style="padding:12px;">Upload a CSV to see a preview (first 5 rows).</div>`;
+                toast('Data cleared');
+                rebuildPrompt({ keepEditor: true });
+              });
+            }
+          });
+
+          continue;
         }
 
-        el.addEventListener('change', async () => {
-          const file = el.files?.[0];
-          if (!file) return;
-          const text = await file.text();
-          const parsed = parseCSV(text);
-          const csvText = `CSV Preview (up to 30 rows)\n\n${csvToText(parsed.headers, parsed.rows, 30)}`;
-          setPlaybookField(playbookKey, f.key, {
-            fileName: file.name,
-            headers: parsed.headers,
-            rows: parsed.rows,
-            text: csvText
-          });
-          renderCSVPreview(parsed.headers, parsed.rows, preview);
-          toast('CSV loaded');
-          rebuildPrompt({ keepEditor: true });
-        });
+        if (f.type === 'textarea') {
+          const rows = f.rows || 4;
+          field.innerHTML = `
+            <label for="${id}">${escapeHtml(f.label)}</label>
+            <textarea id="${id}" rows="${rows}" placeholder="${escapeHtml(f.placeholder || '')}"></textarea>
+            ${fieldHelpHtml(f.help)}
+          `;
+          card.appendChild(field);
 
-        const clearBtn = playbookInputsEl.querySelector(`button[data-clear="${f.key}"]`);
-        if (clearBtn) {
-          clearBtn.addEventListener('click', () => {
-            el.value = '';
-            setPlaybookField(playbookKey, f.key, null);
-            if (preview) preview.innerHTML = `<div class="muted" style="padding:12px;">Upload a CSV to see a preview (first 5 rows).</div>`;
-            toast('Data cleared');
+          queueMicrotask(() => {
+            const el = document.getElementById(id);
+            if (!el) return;
+            if (typeof existing === 'string') el.value = existing;
+            el.addEventListener('input', () => {
+              setPlaybookField(playbookKey, f.key, el.value);
+              rebuildPrompt({ keepEditor: true });
+            });
+          });
+
+          continue;
+        }
+
+        // default: text
+        field.innerHTML = `
+          <label for="${id}">${escapeHtml(f.label)}</label>
+          <input id="${id}" type="text" placeholder="${escapeHtml(f.placeholder || '')}" />
+          ${fieldHelpHtml(f.help)}
+        `;
+        card.appendChild(field);
+
+        queueMicrotask(() => {
+          const el = document.getElementById(id);
+          if (!el) return;
+          if (typeof existing === 'string') el.value = existing;
+          el.addEventListener('input', () => {
+            setPlaybookField(playbookKey, f.key, el.value);
             rebuildPrompt({ keepEditor: true });
           });
-        }
-
-        return;
+        });
       }
 
-      // textarea + text
-      if (typeof existing === 'string') el.value = existing;
-
-      el.addEventListener('input', () => {
-        setPlaybookField(playbookKey, f.key, el.value);
-        rebuildPrompt({ keepEditor: true });
-      });
-    });
+      playbookInputsEl.appendChild(card);
+    }
   }
 
   // -----------------------------
