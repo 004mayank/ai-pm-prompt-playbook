@@ -85,22 +85,15 @@
             <div class="muted">Generated from playbook + your inputs</div>
           </div>
 
-          <details class="collapsible" open>
-            <summary>Structured preview</summary>
-            <pre class="code" id="promptPreview"></pre>
-          </details>
-
-          <details class="collapsible" open>
-            <summary>Final prompt (editable)</summary>
-            <div class="field">
-              <textarea id="promptEditor" rows="14" spellcheck="false"></textarea>
-              <div class="row">
-                <button class="btn btn--ghost" id="resetPromptBtn">Reset to template</button>
-                <button class="btn btn--ghost" id="copyPromptBtn">Copy prompt</button>
-                <div class="muted small" id="promptStats"></div>
-              </div>
+          <div class="field">
+            <label for="promptEditor">Prompt (editable)</label>
+            <textarea id="promptEditor" rows="18" spellcheck="false"></textarea>
+            <div class="row">
+              <button class="btn btn--ghost" id="resetPromptBtn">Reset to template</button>
+              <button class="btn btn--ghost" id="copyPromptBtn">Copy prompt</button>
+              <div class="muted small" id="promptStats"></div>
             </div>
-          </details>
+          </div>
         </div>
 
         <div class="panel">

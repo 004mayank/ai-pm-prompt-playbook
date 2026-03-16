@@ -57,7 +57,6 @@
   const centerSubtitleEl = $('centerSubtitle');
   const playbookInputsEl = $('playbookInputs');
 
-  const promptPreviewEl = $('promptPreview');
   const promptEditorEl = $('promptEditor');
   const resetPromptBtn = $('resetPromptBtn');
   const copyPromptBtn = $('copyPromptBtn');
@@ -578,8 +577,9 @@
     temperatureEl.value = String(it.temperature ?? 0.3);
     tempLabelEl.textContent = String(it.temperature ?? 0.3);
 
+    renderPlaybookInputs(it.playbookKey);
     promptEditorEl.value = it.prompt;
-    promptPreviewEl.textContent = it.prompt;
+    mem.lastBuiltPrompt = it.prompt;
     updatePromptStats();
 
     mem.lastOutput = it.output;
@@ -664,8 +664,6 @@
     const playbookKey = playbookEl.value;
     const state = getPlaybookState(playbookKey);
     const built = buildPrompt({ playbookKey, inputs: state });
-
-    promptPreviewEl.textContent = built.preview;
 
     // If user hasn't diverged from the last built prompt, keep editor in sync.
     const editorNow = promptEditorEl.value || '';
