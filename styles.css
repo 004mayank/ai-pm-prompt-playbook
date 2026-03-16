@@ -319,6 +319,17 @@ code, .mono { font-family: var(--mono); }
 }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(-2px); }
 
+/*
+  Dynamic center panel helpers
+*/
+.stack { display: flex; flex-direction: column; gap: 12px; }
+.subcard {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 12px;
+  padding: 12px;
+}
+
 @media (max-width: 980px) {
   .app { grid-template-columns: 1fr; }
   .sidebar { position: relative; height: auto; }

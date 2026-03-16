@@ -70,37 +70,13 @@
 
     <main class="main">
       <section class="grid">
-        <div class="panel">
+        <div class="panel" id="centerPanel">
           <div class="panel__header">
-            <h2>Data connector</h2>
-            <div class="muted">CSV upload or paste raw text</div>
+            <h2 id="centerTitle">Playbook inputs</h2>
+            <div class="muted" id="centerSubtitle">Fill the fields for the selected playbook.</div>
           </div>
 
-          <div class="tabs">
-            <button class="tab tab--active" data-tab="csv">CSV</button>
-            <button class="tab" data-tab="text">Raw text</button>
-          </div>
-
-          <div class="tabpane" id="tab-csv">
-            <div class="row">
-              <input id="csvFile" type="file" accept=".csv,text/csv" />
-              <button class="btn btn--ghost" id="clearDataBtn">Clear data</button>
-            </div>
-            <div class="preview" id="csvPreview">
-              <div class="muted">Upload a CSV to see a preview (first 5 rows).</div>
-            </div>
-          </div>
-
-          <div class="tabpane hidden" id="tab-text">
-            <div class="field">
-              <label for="rawText">Paste raw text (notes, interview transcript, KPI dump)</label>
-              <textarea id="rawText" rows="8" placeholder="Paste here..."></textarea>
-              <div class="row">
-                <button class="btn btn--secondary" id="useTextBtn">Use this as input</button>
-                <div class="muted small" id="textStatus">No text loaded.</div>
-              </div>
-            </div>
-          </div>
+          <div id="playbookInputs" class="stack"></div>
         </div>
 
         <div class="panel">

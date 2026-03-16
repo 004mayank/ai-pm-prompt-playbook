@@ -23,22 +23,19 @@
     apiKey: 'ai_pm_workbench_openai_api_key',
     history: 'ai_pm_workbench_history_v1',
     lastPlaybook: 'ai_pm_workbench_last_playbook',
-    lastTemp: 'ai_pm_workbench_last_temp'
+    lastTemp: 'ai_pm_workbench_last_temp',
+    inputs: 'ai_pm_workbench_playbook_inputs_v1'
   };
 
   // -----------------------------
   // In-memory (not persisted)
   // -----------------------------
   const mem = {
-    dataText: '',
-    dataKind: 'none', // csv|text|none
-    csv: {
-      headers: [],
-      rows: []
-    },
     lastOutput: null,
     lastRawJson: null,
-    rawMode: false
+    rawMode: false,
+    playbookInputs: {},
+    lastBuiltPrompt: ''
   };
 
   // -----------------------------
@@ -56,13 +53,9 @@
   const temperatureEl = $('temperature');
   const tempLabelEl = $('tempLabel');
 
-  const csvFileEl = $('csvFile');
-  const csvPreviewEl = $('csvPreview');
-  const clearDataBtn = $('clearDataBtn');
-
-  const rawTextEl = $('rawText');
-  const useTextBtn = $('useTextBtn');
-  const textStatusEl = $('textStatus');
+  const centerTitleEl = $('centerTitle');
+  const centerSubtitleEl = $('centerSubtitle');
+  const playbookInputsEl = $('playbookInputs');
 
   const promptPreviewEl = $('promptPreview');
   const promptEditorEl = $('promptEditor');
@@ -184,15 +177,19 @@
     return lines.join('\n');
   }
 
-  function renderCSVPreview(headers, rows) {
+  function renderCSVPreview(headers, rows, containerEl) {
+    if (!containerEl) return;
+
     if (!headers.length) {
-      csvPreviewEl.innerHTML = `<div class="muted" style="padding:12px;">CSV appears empty.</div>`;
+      containerEl.innerHTML = `<div class="muted" style="padding:12px;">CSV appears empty.</div>`;
       return;
     }
+
     const take = rows.slice(0, 5);
     const th = headers.map(h => `<th>${escapeHtml(h)}</th>`).join('');
     const tb = take.map(r => `<tr>${r.map(c => `<td>${escapeHtml(c)}</td>`).join('')}</tr>`).join('');
-    csvPreviewEl.innerHTML = `
+
+    containerEl.innerHTML = `
       <table class="table">
         <thead><tr>${th}</tr></thead>
         <tbody>${tb || `<tr><td colspan="${headers.length}"><span class="muted">No data rows.</span></td></tr>`}</tbody>
@@ -206,9 +203,18 @@
   // -----------------------------
   // Playbooks / templates
   // -----------------------------
-  const PLAYBOOKS = {
+  const playbooks = {
     prd: {
       name: 'PRD Generator',
+      inputs: [
+        { key: 'productName', label: 'Product Name', type: 'text', placeholder: 'e.g., Acme Wallet', help: 'Name of the product or feature area.' },
+        { key: 'productDescription', label: 'Product Description', type: 'textarea', rows: 3, placeholder: '1–2 sentences...', help: 'What is it and where does it sit in the ecosystem?' },
+        { key: 'targetAudience', label: 'Target Audience', type: 'textarea', rows: 3, placeholder: 'Who is this for?', help: 'Primary segments + any constraints (geo, platform, tier).' },
+        { key: 'userProblem', label: 'User Problem', type: 'textarea', rows: 4, placeholder: 'What problem are we solving?', help: 'Be specific: pain, frequency, and current workaround.' },
+        { key: 'keyFeatures', label: 'Key Features', type: 'textarea', rows: 5, placeholder: 'Bullets are fine...', help: 'What will we build in MVP?' },
+        { key: 'successMetrics', label: 'Success Metrics', type: 'text', placeholder: 'e.g., Activation rate, D7 retention', help: 'Primary metric + guardrails if you have them.' },
+        { key: 'constraints', label: 'Constraints / Assumptions', type: 'textarea', rows: 4, placeholder: 'Timeline, team size, dependencies...', help: 'Call out limitations and what must be true.' }
+      ],
       goal: 'Draft an execution-ready PRD v1.',
       outputFormat: [
         'Use these headings:',
@@ -238,6 +244,13 @@
     },
     funnel: {
       name: 'Funnel Drop Analysis',
+      inputs: [
+        { key: 'csvUpload', label: 'Upload CSV', type: 'csv', help: 'Upload a funnel export (events or aggregated funnel table). Preview shows first 5 rows.' },
+        { key: 'stageNames', label: 'Funnel Stage Names', type: 'textarea', rows: 4, placeholder: 'Stage1\nStage2\nStage3', help: 'List stages in order (one per line).' },
+        { key: 'dropoffStage', label: 'Drop-off stage to analyze', type: 'text', placeholder: 'e.g., Checkout → Payment', help: 'The step where drop-off increased.' },
+        { key: 'hypothesis', label: 'Hypothesis', type: 'textarea', rows: 3, placeholder: 'My guess is...', help: 'Optional: your current hypothesis to test.' },
+        { key: 'notes', label: 'Notes', type: 'textarea', rows: 4, placeholder: 'Recent launches, incidents, seasonality...', help: 'Anything that might explain the change.' }
+      ],
       goal: 'Diagnose why a funnel step dropped and propose next actions.',
       outputFormat: [
         'Output using these sections:',
@@ -261,6 +274,13 @@
     },
     kpi: {
       name: 'KPI Diagnosis',
+      inputs: [
+        { key: 'kpiName', label: 'KPI Name', type: 'text', placeholder: 'e.g., D7 retention', help: 'Name + definition if ambiguous.' },
+        { key: 'currentValue', label: 'Current Value', type: 'text', placeholder: 'e.g., 12.4%', help: 'What you see now.' },
+        { key: 'targetValue', label: 'Target Value', type: 'text', placeholder: 'e.g., 14.0%', help: 'Goal or baseline to return to.' },
+        { key: 'timeframe', label: 'Timeframe', type: 'text', placeholder: 'e.g., last 2 weeks vs prior 2 weeks', help: 'Comparison window.' },
+        { key: 'suspectedCauses', label: 'Suspected Causes', type: 'textarea', rows: 4, placeholder: 'Possible drivers...', help: 'Bullets are fine (launches, traffic mix, bugs, pricing).' }
+      ],
       goal: 'Analyze a KPI change and identify drivers + next steps.',
       outputFormat: [
         'Output using these sections:',
@@ -283,6 +303,13 @@
     },
     exec: {
       name: 'Exec Update',
+      inputs: [
+        { key: 'projectName', label: 'Project Name', type: 'text', placeholder: 'e.g., Payments Reliability', help: 'What initiative is this update for?' },
+        { key: 'achievements', label: 'Key Achievements', type: 'textarea', rows: 4, placeholder: 'Shipped X, launched Y...', help: 'Bullets preferred.' },
+        { key: 'risks', label: 'Risks / Blockers', type: 'textarea', rows: 4, placeholder: 'Top risks and what you need...', help: 'Include clear asks.' },
+        { key: 'metrics', label: 'Metrics Snapshot', type: 'textarea', rows: 3, placeholder: 'Metric: value (WoW)...', help: 'Keep it tight; 3–5 lines.' },
+        { key: 'nextWeek', label: 'Next Week Plan', type: 'textarea', rows: 4, placeholder: 'What’s next...', help: 'Bullets preferred.' }
+      ],
       goal: 'Write a crisp exec update (bullets only).',
       outputFormat: [
         'Bullets only. Use this structure:',
@@ -304,6 +331,14 @@
     },
     research: {
       name: 'Research Synthesis',
+      inputs: [
+        { key: 'csvUpload', label: 'Upload CSV', type: 'csv', help: 'Optional: upload a research export (responses, tags, or notes). Preview shows first 5 rows.' },
+        { key: 'rawNotes', label: 'Raw Research Notes', type: 'textarea', rows: 6, placeholder: 'Paste notes, transcripts, or summaries...', help: 'If you do not have CSV, paste notes here.' },
+        { key: 'themes', label: 'Key Themes', type: 'textarea', rows: 3, placeholder: 'Theme 1\nTheme 2', help: 'Optional: themes you already see.' },
+        { key: 'insights', label: 'Key Insights', type: 'textarea', rows: 3, placeholder: 'Insight 1\nInsight 2', help: 'Optional: hypotheses or early takeaways.' },
+        { key: 'quotes', label: 'User Quotes', type: 'textarea', rows: 4, placeholder: '"Quote" — user type', help: 'Optional: paste notable quotes.' },
+        { key: 'opportunities', label: 'Opportunities', type: 'textarea', rows: 4, placeholder: 'Opportunity areas...', help: 'Optional: solution directions to evaluate.' }
+      ],
       goal: 'Synthesize notes into insights and recommended actions.',
       outputFormat: [
         'Output using these sections:',
@@ -328,8 +363,38 @@
     }
   };
 
-  function buildPrompt({ playbookKey, dataText }) {
-    const pb = PLAYBOOKS[playbookKey];
+  function inputsToText(playbookKey, inputs) {
+    const pb = playbooks[playbookKey];
+    const schema = pb.inputs || [];
+
+    const lines = [];
+    for (const f of schema) {
+      const v = inputs?.[f.key];
+      if (!v) continue;
+
+      if (f.type === 'csv') {
+        const txt = typeof v === 'object' ? (v.text || '') : '';
+        if (safeTrim(txt)) {
+          lines.push(`${f.label}:`);
+          lines.push(txt);
+          lines.push('');
+        }
+        continue;
+      }
+
+      const s = typeof v === 'string' ? safeTrim(v) : '';
+      if (!s) continue;
+      lines.push(`${f.label}:`);
+      lines.push(s);
+      lines.push('');
+    }
+
+    const out = lines.join('\n').trim();
+    return out || '(No inputs yet)';
+  }
+
+  function buildPrompt({ playbookKey, inputs }) {
+    const pb = playbooks[playbookKey];
     const goal = pb.goal;
 
     const constraints = [
@@ -344,7 +409,7 @@
       '- Include risks + mitigations'
     ].join('\n');
 
-    const inputs = dataText ? dataText : '(No data attached)';
+    const inputsText = inputsToText(playbookKey, inputs);
 
     const prompt = [
       'You are a senior AI Product Manager. You write crisp, execution-ready artifacts.',
@@ -358,8 +423,8 @@
       'CONSTRAINTS',
       constraints,
       '',
-      'INPUTS (from user / uploaded data)',
-      inputs,
+      'PLAYBOOK INPUTS (user-provided)',
+      inputsText,
       '',
       'OUTPUT FORMAT',
       pb.outputFormat,
@@ -372,7 +437,7 @@
   }
 
   function buildEvalPrompt({ playbookKey, userPrompt, modelOutput }) {
-    const pb = PLAYBOOKS[playbookKey];
+    const pb = playbooks[playbookKey];
 
     return [
       'You are a strict evaluator for AI PM outputs.',
@@ -485,7 +550,7 @@
 
     historyListEl.innerHTML = items.map((it, idx) => {
       const ts = new Date(it.timestamp).toLocaleString();
-      const name = PLAYBOOKS[it.playbookKey]?.name || it.playbookKey;
+      const name = playbooks[it.playbookKey]?.name || it.playbookKey;
       const meta = `${ts} • ${name}`;
       return `
         <button class="btn btn--ghost" style="width:100%; justify-content:flex-start;" data-history-idx="${idx}">
@@ -597,16 +662,173 @@
   // -----------------------------
   function rebuildPrompt({ keepEditor = false } = {}) {
     const playbookKey = playbookEl.value;
-    const built = buildPrompt({ playbookKey, dataText: mem.dataText });
+    const state = getPlaybookState(playbookKey);
+    const built = buildPrompt({ playbookKey, inputs: state });
 
     promptPreviewEl.textContent = built.preview;
 
-    if (!keepEditor) {
+    // If user hasn't diverged from the last built prompt, keep editor in sync.
+    const editorNow = promptEditorEl.value || '';
+    const safeToOverwrite = !keepEditor || editorNow === mem.lastBuiltPrompt;
+    if (safeToOverwrite) {
       promptEditorEl.value = built.prompt;
+      mem.lastBuiltPrompt = built.prompt;
     }
 
     updatePromptStats();
     localStorage.setItem(LS.lastPlaybook, playbookKey);
+  }
+
+  // -----------------------------
+  // Playbook dynamic inputs
+  // -----------------------------
+  function loadInputs() {
+    try {
+      const raw = localStorage.getItem(LS.inputs);
+      mem.playbookInputs = raw ? JSON.parse(raw) : {};
+    } catch {
+      mem.playbookInputs = {};
+    }
+  }
+
+  function saveInputs() {
+    try {
+      localStorage.setItem(LS.inputs, JSON.stringify(mem.playbookInputs || {}));
+    } catch {
+      // ignore
+    }
+  }
+
+  function getPlaybookState(playbookKey) {
+    if (!mem.playbookInputs) mem.playbookInputs = {};
+    if (!mem.playbookInputs[playbookKey]) mem.playbookInputs[playbookKey] = {};
+    return mem.playbookInputs[playbookKey];
+  }
+
+  function setPlaybookField(playbookKey, fieldKey, value) {
+    const st = getPlaybookState(playbookKey);
+    st[fieldKey] = value;
+    saveInputs();
+  }
+
+  function fieldHelpHtml(help) {
+    return help ? `<div class="hint">${escapeHtml(help)}</div>` : '';
+  }
+
+  function renderPlaybookInputs(playbookKey) {
+    const pb = playbooks[playbookKey];
+    if (!pb) return;
+
+    centerTitleEl.textContent = pb.name;
+    centerSubtitleEl.textContent = 'Inputs for the selected playbook. Switching playbooks updates this panel.';
+
+    const st = getPlaybookState(playbookKey);
+
+    playbookInputsEl.innerHTML = '';
+
+    const wrap = document.createElement('div');
+    wrap.className = 'subcard';
+
+    const frag = document.createDocumentFragment();
+
+    (pb.inputs || []).forEach((f) => {
+      const field = document.createElement('div');
+      field.className = 'field';
+
+      const id = `pb-${playbookKey}-${f.key}`;
+
+      if (f.type === 'csv') {
+        field.innerHTML = `
+          <label for="${id}">${escapeHtml(f.label)}</label>
+          <div class="row">
+            <input id="${id}" type="file" accept=".csv,text/csv" />
+            <button class="btn btn--ghost" type="button" data-clear="${f.key}">Clear</button>
+          </div>
+          ${fieldHelpHtml(f.help)}
+          <div class="preview" data-preview="${f.key}">
+            <div class="muted">Upload a CSV to see a preview (first 5 rows).</div>
+          </div>
+        `;
+        frag.appendChild(field);
+        return;
+      }
+
+      if (f.type === 'textarea') {
+        const rows = f.rows || 4;
+        field.innerHTML = `
+          <label for="${id}">${escapeHtml(f.label)}</label>
+          <textarea id="${id}" rows="${rows}" placeholder="${escapeHtml(f.placeholder || '')}"></textarea>
+          ${fieldHelpHtml(f.help)}
+        `;
+        frag.appendChild(field);
+        return;
+      }
+
+      // default: text
+      field.innerHTML = `
+        <label for="${id}">${escapeHtml(f.label)}</label>
+        <input id="${id}" type="text" placeholder="${escapeHtml(f.placeholder || '')}" />
+        ${fieldHelpHtml(f.help)}
+      `;
+      frag.appendChild(field);
+    });
+
+    wrap.appendChild(frag);
+    playbookInputsEl.appendChild(wrap);
+
+    // Hydrate values + attach listeners
+    (pb.inputs || []).forEach((f) => {
+      const id = `pb-${playbookKey}-${f.key}`;
+      const el = document.getElementById(id);
+      if (!el) return;
+
+      const existing = st[f.key];
+
+      if (f.type === 'csv') {
+        const preview = playbookInputsEl.querySelector(`[data-preview="${f.key}"]`);
+        if (existing && typeof existing === 'object' && existing.headers && existing.rows) {
+          renderCSVPreview(existing.headers, existing.rows, preview);
+        }
+
+        el.addEventListener('change', async () => {
+          const file = el.files?.[0];
+          if (!file) return;
+          const text = await file.text();
+          const parsed = parseCSV(text);
+          const csvText = `CSV Preview (up to 30 rows)\n\n${csvToText(parsed.headers, parsed.rows, 30)}`;
+          setPlaybookField(playbookKey, f.key, {
+            fileName: file.name,
+            headers: parsed.headers,
+            rows: parsed.rows,
+            text: csvText
+          });
+          renderCSVPreview(parsed.headers, parsed.rows, preview);
+          toast('CSV loaded');
+          rebuildPrompt({ keepEditor: true });
+        });
+
+        const clearBtn = playbookInputsEl.querySelector(`button[data-clear="${f.key}"]`);
+        if (clearBtn) {
+          clearBtn.addEventListener('click', () => {
+            el.value = '';
+            setPlaybookField(playbookKey, f.key, null);
+            if (preview) preview.innerHTML = `<div class="muted" style="padding:12px;">Upload a CSV to see a preview (first 5 rows).</div>`;
+            toast('Data cleared');
+            rebuildPrompt({ keepEditor: true });
+          });
+        }
+
+        return;
+      }
+
+      // textarea + text
+      if (typeof existing === 'string') el.value = existing;
+
+      el.addEventListener('input', () => {
+        setPlaybookField(playbookKey, f.key, el.value);
+        rebuildPrompt({ keepEditor: true });
+      });
+    });
   }
 
   // -----------------------------
@@ -762,7 +984,7 @@
       } catch {
         // If model returns non-JSON, show a fallback.
         evalJson = {
-          playbook: PLAYBOOKS[playbookKey].name,
+          playbook: playbooks[playbookKey].name,
           scores: {
             clarity: 3,
             structure: 3,
@@ -868,51 +1090,15 @@
 
     testKeyBtn.addEventListener('click', testConnection);
 
-    playbookEl.addEventListener('change', () => rebuildPrompt({ keepEditor: false }));
+    playbookEl.addEventListener('change', () => {
+      const playbookKey = playbookEl.value;
+      renderPlaybookInputs(playbookKey);
+      rebuildPrompt({ keepEditor: false });
+    });
 
     temperatureEl.addEventListener('input', () => {
       tempLabelEl.textContent = temperatureEl.value;
       localStorage.setItem(LS.lastTemp, temperatureEl.value);
-    });
-
-    csvFileEl.addEventListener('change', async () => {
-      const f = csvFileEl.files?.[0];
-      if (!f) return;
-
-      const text = await f.text();
-      const parsed = parseCSV(text);
-      mem.csv = parsed;
-      mem.dataKind = 'csv';
-      renderCSVPreview(parsed.headers, parsed.rows);
-
-      // Convert to a compact text representation for prompts
-      mem.dataText = `CSV Preview (up to 30 rows)\n\n${csvToText(parsed.headers, parsed.rows, 30)}`;
-      toast('CSV loaded');
-      rebuildPrompt({ keepEditor: true });
-    });
-
-    clearDataBtn.addEventListener('click', () => {
-      csvFileEl.value = '';
-      mem.csv = { headers: [], rows: [] };
-      mem.dataText = '';
-      mem.dataKind = 'none';
-      csvPreviewEl.innerHTML = `<div class="muted" style="padding:12px;">Upload a CSV to see a preview (first 5 rows).</div>`;
-      toast('Data cleared');
-      rebuildPrompt({ keepEditor: true });
-    });
-
-    useTextBtn.addEventListener('click', () => {
-      const t = safeTrim(rawTextEl.value);
-      if (!t) {
-        textStatusEl.textContent = 'No text loaded.';
-        toast('Paste some text first');
-        return;
-      }
-      mem.dataText = `Raw notes (user-pasted)\n\n${t}`;
-      mem.dataKind = 'text';
-      textStatusEl.textContent = `Loaded ${t.length} chars.`;
-      toast('Text loaded');
-      rebuildPrompt({ keepEditor: true });
     });
 
     promptEditorEl.addEventListener('input', updatePromptStats);
@@ -944,11 +1130,11 @@
   // Init
   // -----------------------------
   function init() {
-    initTabs();
     loadApiKey();
+    loadInputs();
 
     const lastPlaybook = localStorage.getItem(LS.lastPlaybook);
-    if (lastPlaybook && PLAYBOOKS[lastPlaybook]) playbookEl.value = lastPlaybook;
+    if (lastPlaybook && playbooks[lastPlaybook]) playbookEl.value = lastPlaybook;
 
     const lastTemp = localStorage.getItem(LS.lastTemp);
     if (lastTemp) {
@@ -956,6 +1142,7 @@
       tempLabelEl.textContent = lastTemp;
     }
 
+    renderPlaybookInputs(playbookEl.value);
     rebuildPrompt({ keepEditor: false });
     renderHistory();
     bindEvents();
